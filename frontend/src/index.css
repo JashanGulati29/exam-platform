@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-ink-950;
+  }
+  body {
+    @apply bg-grid-glow bg-ink-950 min-h-screen;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  ::selection {
+    @apply bg-accent-500/40;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent-400;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] shadow-glass rounded-2xl;
+  }
+  .glass-card {
+    @apply glass-panel p-5;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 py-2.5
+           text-sm font-semibold text-white shadow-glow transition hover:bg-accent-400
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03]
+           px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08];
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-danger/90 px-4 py-2.5
+           text-sm font-semibold text-white transition hover:bg-danger;
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-slate-100
+           placeholder:text-slate-500 focus:border-accent-400/60 focus:bg-white/[0.06] outline-none transition;
+  }
+  .label-text {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-400;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+}
