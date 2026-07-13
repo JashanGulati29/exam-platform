@@ -26,8 +26,7 @@ const signup = asyncHandler(async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const verifyToken = crypto.randomBytes(32).toString('hex');
 
-  const passwordHash = await bcrypt.hash(password, 10);
-const verifyToken = crypto.randomBytes(32).toString('hex');
+  
 
 try {
   const result = await db.query(
@@ -52,6 +51,7 @@ try {
   console.error("SIGNUP ERROR:", err);
   throw err;
 }
+});
 
 const verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.body;
