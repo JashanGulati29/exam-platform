@@ -25,9 +25,14 @@ const signup = asyncHandler(async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const verifyToken = crypto.randomBytes(32).toString('hex');
 
+  const passwordHash = await bcrypt.hash(password, 10);
+const verifyToken = crypto.randomBytes(32).toString('hex');
+
+try {
   const result = await db.query(
     `INSERT INTO users (full_name, email, password_hash, role, email_verify_token)
-     VALUES ($1, $2, $3, $4, $5) RETURNING ${PUBLIC_USER_FIELDS}`,
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING ${PUBLIC_USER_FIELDS}`,
     [fullName, email, passwordHash, finalRole, verifyToken]
   );
 
@@ -37,11 +42,15 @@ const signup = asyncHandler(async (req, res) => {
     text: `Welcome! Verify your account using this token: ${verifyToken}`,
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     message: 'Account created. Check your email to verify your account.',
     user: result.rows[0],
   });
-});
+
+} catch (err) {
+  console.error("SIGNUP ERROR:", err);
+  throw err;
+}
 
 const verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.body;
