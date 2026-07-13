@@ -2,9 +2,12 @@ import axios from 'axios';
 
 // In development, Vite proxies /api → localhost:5000, so a relative URL works
 // without CORS issues. The env var overrides this for staging/production builds.
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const BASE_URL = 'https://exam-platform-backend-7714.onrender.com/api';
 
-const api = axios.create({ baseURL: BASE_URL });
+const api = axios.create({
+  baseURL: BASE_URL,
+});
+
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
