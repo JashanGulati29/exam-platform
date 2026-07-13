@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "https://exam-platform-backend-7714.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
