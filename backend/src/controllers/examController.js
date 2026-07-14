@@ -1,7 +1,9 @@
 const db = require('../config/db');
 const asyncHandler = require('../utils/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
-
+function generateExamCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 // Creates an exam together with its sections, questions and (optionally)
 // the list of enrolled students, all inside a single transaction.
 const createExam = asyncHandler(async (req, res) => {
@@ -12,31 +14,52 @@ const createExam = asyncHandler(async (req, res) => {
 
   const client = await db.getClient();
   try {
-    await client.query('BEGIN');
+  await client.query('BEGIN');
 
-    const examResult = await client.query(
-      `INSERT INTO exams
-        (title, description, created_by, duration_minutes, start_time, end_time,
-         negative_marking, randomize_questions, fullscreen_required, proctoring_enabled,
-         max_tab_switches, instructions, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-      [
-        e.title,
-        e.description || null,
-        req.user.id,
-        e.durationMinutes,
-        e.startTime,
-        e.endTime,
-        e.negativeMarking ?? false,
-        e.randomizeQuestions ?? false,
-        e.fullscreenRequired ?? true,
-        e.proctoringEnabled ?? true,
-        e.maxTabSwitches ?? 3,
-        e.instructions || null,
-        e.status || 'draft',
-      ]
-    );
-    const exam = examResult.rows[0];
+const examCode = generateExamCode();
+
+const examResult = await client.query(
+  `INSERT INTO exams
+    (
+      title,
+      exam_code,
+      description,
+      created_by,
+      duration_minutes,
+      start_time,
+      end_time,
+      negative_marking,
+      randomize_questions,
+      fullscreen_required,
+      proctoring_enabled,
+      max_tab_switches,
+      instructions,
+      status
+    )
+    VALUES
+    (
+      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14
+    )
+    RETURNING *`,
+  [
+    e.title,
+    examCode,
+    e.description || null,
+    req.user.id,
+    e.durationMinutes,
+    e.startTime,
+    e.endTime,
+    e.negativeMarking ?? false,
+    e.randomizeQuestions ?? false,
+    e.fullscreenRequired ?? true,
+    e.proctoringEnabled ?? true,
+    e.maxTabSwitches ?? 3,
+    e.instructions || null,
+    e.status || "draft",
+  ]
+);
+
+const exam = examResult.rows[0];
     let totalMarks = 0;
 
     // sections: [{ title, questionIds: [...] }]
@@ -174,5 +197,40 @@ const enrollStudents = asyncHandler(async (req, res) => {
   }
   res.json({ message: `${studentIds.length} student(s) enrolled.` });
 });
+const joinExamByCode = asyncHandler(async (req, res) => {
+  const { examCode } = req.body;
 
-module.exports = { createExam, listExams, getExam, updateExam, deleteExam, enrollStudents };
+  if (!examCode) {
+    throw new ApiError(400, "Exam code is required.");
+  }
+
+  const exam = await db.query(
+    "SELECT id FROM exams WHERE exam_code = $1",
+    [examCode.toUpperCase()]
+  );
+
+  if (!exam.rows.length) {
+    throw new ApiError(404, "Invalid exam code.");
+  }
+
+  await db.query(
+    `INSERT INTO exam_enrollments (exam_id, student_id)
+     VALUES ($1,$2)
+     ON CONFLICT DO NOTHING`,
+    [exam.rows[0].id, req.user.id]
+  );
+
+  res.json({
+    message: "Successfully joined exam.",
+    examId: exam.rows[0].id
+  });
+});
+module.exports = {
+  createExam,
+  listExams,
+  getExam,
+  updateExam,
+  deleteExam,
+  enrollStudents,
+  joinExamByCode
+};

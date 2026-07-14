@@ -5,6 +5,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 router.use(requireAuth);
 
 router.get('/', exams.listExams);
+router.post('/join', requireRole('student'), exams.joinExamByCode);
 router.get('/:id', exams.getExam);
 
 router.post('/', requireRole('admin', 'examiner'), exams.createExam);
